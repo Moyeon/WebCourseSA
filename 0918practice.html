@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .box{
+            width: 100px;
+            height: 100px;
+            margin: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            flex-direction: column;
+        }
+        .half-box1{
+            width: 100px;
+            height: 50px;
+            background-color: gray;
+        }
+        .half-box2{
+            width: 100px;
+            height: 50px;
+            background-color: black;
+        }
+        .ellipse{
+            width: 50px;
+            height: 100px;
+            background-color: gray;
+            border-radius: 25px;
+        }
+        .circle{
+            width: 50px;
+            height: 50px;
+            background-color: black;
+            border-radius: 25px;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <div class="half-box1"></div>
+        <div class="half-box2"></div>
+    </div>
+    <div class="box">
+        <div class="ellipse"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+    </div>
+    <div class="box"></div>
+    <div class="box"></div>
+</body>
+</html>
