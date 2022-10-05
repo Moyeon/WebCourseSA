@@ -18,6 +18,24 @@ class Display {
         );
         console.table(this.grid);
     }
+    
+    validMove(p) {
+        return p.shape.every((row, dy) => {
+            return row.every((value, dx) => {
+                let x = p.x + dx;
+                let y = p.y + dy;
+
+                return (
+                    this.isInsideWalls(x, y)
+                );
+            });
+        });
+    }
+
+    isInsideWalls(x, y) {
+        return x >= 0 && x <= BOARD.WIDTH && y < BOARD.HEIGHT;
+    }
+
 }
 
 var display = new Display();
@@ -67,6 +85,21 @@ class Piece {
         this.x = p.x;
         this.y = p.y;
     }
+
+    rotate(piece) {
+        let p = JSON.parse(JSON.stringify(piece));
+
+        for(let y = 0; y < p.shape.length; y++) {
+            for (let x = 0; x < y; x++) {
+                [p.shape[x][y], p.shape[y][x]] = [p.shape[y][x], p.shape[x][y]];
+            }
+        }
+
+        p.shape.forEach((row) => row.reverse());
+
+        this.shape = p.shape;
+    }
+
 }
 
 const moves = {
@@ -82,6 +115,7 @@ document.addEventListener('keydown', event => {
         if(display.validMove(p)){
             display.piece.move(p);
             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            display.piece.draw();
         }
 
     }else if(event.keyCode == 39){//right arrow
@@ -90,6 +124,7 @@ document.addEventListener('keydown', event => {
         if(display.validMove(p)){
             display.piece.move(p);
             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            display.piece.draw();
         }
     }else if(event.keyCode == 40){ //down arrow
         event.preventDefault();
@@ -97,6 +132,23 @@ document.addEventListener('keydown', event => {
         if(display.validMove(p)){
             display.piece.move(p);
             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            display.piece.draw();
         }
+    } else if (event.keyCode == 32) { // space bar
+        event.preventDefault();
+        var p = moves.down(display.piece);
+        while (display.validMove(p)) {
+            display.piece.move(p);
+            p = moves.down(display.piece);
+        }
+
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        display.piece.draw();
+    } else if (event.keyCode == 38) { // up arrow
+        event.preventDefault();
+        display.piece.rotate(display.piece);
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        display.piece.draw();
     }
+
 });
