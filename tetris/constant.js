@@ -47,9 +47,8 @@ const TETROMINO = [
     },
     {
         shape : [
-            [6, 6, 0],
-            [6, 6, 0],
-            [0, 0, 0]
+            [6, 6],
+            [6, 6],
         ],
         color : 'lightblue' //set
     },
