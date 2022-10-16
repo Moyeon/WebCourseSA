@@ -7,6 +7,7 @@ ctx.canvas.width = BOARD.WIDTH * BOARD.BLOCKSIZE;
 ctx.canvas.height = BOARD.HEIGHT * BOARD.BLOCKSIZE;
 
 ctx.scale(BOARD.BLOCKSIZE, BOARD.BLOCKSIZE);
+nextCtx.scale(BOARD.BLOCKSIZE, BOARD.BLOCKSIZE);
 
 let requestId = null;
 let time = null;
@@ -15,12 +16,36 @@ time = {start : 0, elapsed: 0, level: 1000};
 class Display {
     grid;
     piece;
+    next;
+    ctx;
+    nextCtx;
+
+    constructor(ctx, nextCtx){
+        this.ctx = ctx;
+        this.nextCtx = nextCtx;
+        this.init();
+    }
+
+    init() {
+        // Calculate size of canvas from constants.
+        this.ctx.canvas.width = BOARD.WIDTH * BOARD.BLOCKSIZE;
+        this.ctx.canvas.height = BOARD.HEIGHT * BOARD.BLOCKSIZE;
+    
+        // Scale so we don't need to give size on every draw.
+        this.ctx.scale(BOARD.BLOCKSIZE, BOARD.BLOCKSIZE);
+    }
 
     getNewBoard(){
         this.grid = Array.from(
             {length: BOARD.HEIGHT}, ()=>Array(BOARD.WIDTH).fill(0)
         );
-        console.table(this.grid);
+    }
+
+    reset() {
+        this.getNewBoard();
+        this.piece = new Piece(this.ctx);
+        this.piece.setStartingPosition();
+        this.getNewPiece();
     }
     
     validMove(p) {
@@ -41,27 +66,26 @@ class Display {
     }
 
     notOccupied(x, y){
-        console.log(this.grid);
         return this.grid[y] && this.grid[y][x] === 0;
-    }
-
-    animate(){
-        this.piece.draw();
-        requestAnimationFrame(this.animate.bind(this));
     }
 
     drop(){
         let p = moves.down(this.piece);
         if(this.validMove(p)){
+            console.log('dropped');
             this.piece.move(p);
         }else{
+            console.log('freeze');
             this.freeze();
             if(this.piece.y === 0){
                 return false;
             }
-            this.piece = new Piece(ctx);
+            this.piece = this.next;
             this.piece.ctx = this.ctx;
+            this.piece.setStartingPosition();
+            this.getNewPiece();
         }
+        return true;
     }
 
     freeze(){
@@ -78,7 +102,7 @@ class Display {
         this.grid.forEach((row, y) => {
             row.forEach((value, x) => {
                 if(value > 0){
-                    this.ctx.fillStyle = TETROMINO[value].color;
+                    this.ctx.fillStyle = TETROMINO[value-1].color;
                     this.ctx.fillRect(x, y, 1, 1);
                 }
             });
@@ -91,28 +115,27 @@ class Display {
     }
 
     getNewPiece(){
-        const {width, height} = this.ctxNext.canvas;
-        this.next = new Piece(this.ctxNext);
-        this.ctxNext.clearRect(0, 0, width, height);
+        const {width, height} = this.nextCtx.canvas;
+        this.next = new Piece(this.nextCtx);
+        this.nextCtx.clearRect(0, 0, width, height);
         this.next.draw();
     }
 
 }
 
-var display = new Display();
+var display = new Display(ctx, nextCtx);
 
 function gameStart(){
-    display.getNewBoard();
-    var piece = new Piece(ctx);
-    display.piece = piece;
+    display.reset();
     animate();
-    
 }
 
 function animate(now = 0){
     time.elapsed = now - time.start;
+    console.log(time.elapsed);
 
     if(time.elapsed > time.level){
+        
         time.start = now;
         if(!display.drop()){
             //gameover
@@ -138,7 +161,7 @@ class Piece {
     }
 
     spawn(){
-        this.typeID = Math.floor(Math.random() * 7) + 1;
+        this.typeID = Math.floor(Math.random() * 7);
         this.shape = TETROMINO[this.typeID].shape;
         this.color = TETROMINO[this.typeID].color;
         
@@ -178,6 +201,10 @@ class Piece {
         }
     }
 
+    setStartingPosition() {
+        this.x = 3;
+    }
+
 }
 
 const moves = {
@@ -192,8 +219,6 @@ document.addEventListener('keydown', event => {
         var p = moves.left(display.piece);
         if(display.validMove(p)){
             display.piece.move(p);
-            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-            display.piece.draw();
         }
 
     }else if(event.keyCode == 39){//right arrow
@@ -201,16 +226,12 @@ document.addEventListener('keydown', event => {
         var p = moves.right(display.piece);
         if(display.validMove(p)){
             display.piece.move(p);
-            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-            display.piece.draw();
         }
     }else if(event.keyCode == 40){ //down arrow
         event.preventDefault();
         var p = moves.down(display.piece);
         if(display.validMove(p)){
             display.piece.move(p);
-            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-            display.piece.draw();
         }
     } else if (event.keyCode == 32) { // space bar
         event.preventDefault();
@@ -219,14 +240,9 @@ document.addEventListener('keydown', event => {
             display.piece.move(p);
             p = moves.down(display.piece);
         }
-
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-        display.piece.draw();
     } else if (event.keyCode == 38) { // up arrow
         event.preventDefault();
         display.piece.rotate(display.piece);
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-        display.piece.draw();
     }
 
 });
